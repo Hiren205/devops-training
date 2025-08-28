@@ -40,16 +40,15 @@ Resources:
             install:
               runtime-versions:
                 nodejs: 22
-              commands:
-                - echo "Installing AWS CLI..."
-                - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                - unzip awscliv2.zip
-                - sudo ./aws/install
             build:
               commands:
-                - echo "Deploying Lambda function..."
-                - aws lambda update-function-code \
-                    --function-name !Sub "${ProjectName}-Lambda" \
+                - echo "Current working directory: $(pwd)"
+                - echo "Listing all files in current directory:"
+                - ls -al
+                - echo "Deploying Lambda function $LAMBDA_FUNCTION_NAME..."
+                - |
+                  aws lambda update-function-code \
+                    --function-name $LAMBDA_FUNCTION_NAME \
                     --zip-file fileb://lambda.zip
           artifacts:
             files:
