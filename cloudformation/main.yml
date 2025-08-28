@@ -24,6 +24,11 @@ Resources:
     Properties:
       BucketName: !Sub "${ProjectName}-deployment-${AWS::AccountId}-${AWS::Region}"
 
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-static-frontend-file"      
+
   IAMRolesStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -47,6 +52,20 @@ Resources:
         ProjectName: !Ref ProjectName
         DeploymentBucket: !Ref DeploymentBucket
 
+  PipelineStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/calculator-first-cicd-bucket/pipeline.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        GitHubRepo: !Ref GitHubRepo
+        GitHubBranch: !Ref GitHubBranch
+        GitHubToken: !Sub "{{resolve:ssm:${GitHubToken}}}"
+        ArtifactBucket: !Ref DeploymentBucket
+        CodePipelineServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodePipelineServiceRoleArn
+        CodeBuildProjectName: !GetAtt CodeBuildStack.Outputs.CodeBuildProjectName
+        CodeBuildServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodeBuildServiceRoleArn
+
   #   # Security Group allowing SSH and HTTP from anywhere
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -63,39 +82,50 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
 
+  # IAM Role with full admin access
+  EC2AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  # Instance Profile for EC2
+  EC2AdminInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2AdminRole         
+
   # EC2 Instance
   EC2Instance:
     Type: AWS::EC2::Instance
+    DependsOn: PipelineStack
     Properties:
-      InstanceType: t3.micro # or t4g.micro if supported in your region
+      InstanceType: t3.micro
       ImageId: ami-0c02fb55956c7d316
       KeyName: !Ref EC2KeyPair
       SecurityGroupIds:
         - !Ref EC2SecurityGroup
+      IamInstanceProfile: !Ref EC2AdminInstanceProfile
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}-ec2"
+          Value: !Sub "${ProjectName}-EC2"
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          sudo yum update -y
-          sudo yum install -y httpd
-          sudo systemctl enable httpd
-          sudo systemctl start httpd
-
-  PipelineStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://s3.amazonaws.com/calculator-first-cicd-bucket/pipeline.yml
-      Parameters:
-        ProjectName: !Ref ProjectName
-        GitHubRepo: !Ref GitHubRepo
-        GitHubBranch: !Ref GitHubBranch
-        GitHubToken: !Sub "{{resolve:ssm:${GitHubToken}}}"
-        ArtifactBucket: !Ref DeploymentBucket
-        CodePipelineServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodePipelineServiceRoleArn
-        CodeBuildProjectName: !GetAtt CodeBuildStack.Outputs.CodeBuildProjectName
-        CodeBuildServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodeBuildServiceRoleArn
+          yum update -y
+          yum install -y httpd aws-cli
+          systemctl enable httpd
+          systemctl start httpd
+          aws s3 cp s3://calculator-static-frontend-file/index.html /var/www/html/index.html        
 
 Outputs:
   InstancePublicIP:
