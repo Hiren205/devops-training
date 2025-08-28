@@ -32,14 +32,13 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-Lambda"
-      Handler: app.handler # entry point -> app.js exports.handler
+      Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs22.x
       Code:
         S3Bucket: !Ref DeploymentBucket
-        # S3Key: lambda.zip
-      Runtime: nodejs22.x
-      Timeout: 10
-      MemorySize: 128
+        S3Key: placeholder.zip
+
 
   # === API Gateway Setup ===
   ApiGatewayRestApi:

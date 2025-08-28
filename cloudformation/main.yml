@@ -38,14 +38,14 @@ Resources:
         DeploymentBucket: !Ref DeploymentBucket
         CodeBuildServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodeBuildServiceRoleArn
 
-  # LambdaStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn: IAMRolesStack
-  #   Properties:
-  #     TemplateURL: https://calculator-first-cicd-bucket.s3.us-east-1.amazonaws.com/lambda-deploy.yml
-  #     Parameters:
-  #       ProjectName: !Ref ProjectName
-  #       DeploymentBucket: !Ref DeploymentBucket
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: IAMRolesStack
+    Properties:
+      TemplateURL: https://calculator-first-cicd-bucket.s3.us-east-1.amazonaws.com/lambda-deploy.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        DeploymentBucket: !Ref DeploymentBucket
 
   #   # Security Group allowing SSH and HTTP from anywhere
   EC2SecurityGroup:
