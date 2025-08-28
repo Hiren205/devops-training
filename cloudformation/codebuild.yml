@@ -26,6 +26,46 @@ Resources:
         BuildSpec: buildspec.yml
       TimeoutInMinutes: 10
 
+  LambdaDeployProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${ProjectName}-LambdaDeploy"
+      Description: "CodeBuild project to deploy Lambda function"
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+
+          phases:
+            install:
+              runtime-versions:
+                nodejs: 22
+              commands:
+                - echo "Installing AWS CLI..."
+                - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                - unzip awscliv2.zip
+                - sudo ./aws/install
+            build:
+              commands:
+                - echo "Deploying Lambda function..."
+                - aws lambda update-function-code \
+                    --function-name !Sub "${ProjectName}-Lambda" \
+                    --zip-file fileb://lambda.zip
+          artifacts:
+            files:
+              - '**/*'
+      Artifacts:
+        Type: CODEPIPELINE              
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        EnvironmentVariables:
+          - Name: PROJECT_NAME
+            Value: !Ref ProjectName
+      ServiceRole: !Ref CodeBuildServiceRoleArn
+      
+
 Outputs:
   CodeBuildProjectName:
     Value: !Ref CodeBuildProject

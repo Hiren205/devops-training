@@ -17,6 +17,8 @@ Parameters:
     Type: String
   CodeBuildProjectName:
     Type: String
+  CodeBuildServiceRoleArn:
+    Type: String  
 
 Resources:
   Pipeline:
@@ -57,21 +59,20 @@ Resources:
                 - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref CodeBuildProjectName
-        - Name: Deploy
+        - Name: DeployLambda
           Actions:
-            - Name: LambdaDeploy
+            - Name: DeployLambdaCode
               ActionTypeId:
-                Category: Deploy
+                Category: Build
                 Owner: AWS
-                Provider: Lambda
+                Provider: CodeBuild
                 Version: 1
-              InputArtifacts:
-                - Name: BuildOutput
+              RunOrder: 1
               Configuration:
-                FunctionName: !Sub "${ProjectName}-LambdaFunction"
-                S3Bucket: !Ref ArtifactBucket
-                S3ObjectKey: BuildOutput::lambda.zip   
-
+                ProjectName: !Sub ${ProjectName}-LambdaDeploy  # CodeBuild project for deployment
+              InputArtifacts:
+                - Name: BuildOutput  # artifact from previous build stage containing lambda.zip
+              RoleArn: !Ref CodeBuildServiceRoleArn
 
 Outputs:
   PipelineName:

@@ -4,11 +4,11 @@ BUCKET=calculator-first-cicd-bucket
  
 # Upload all child templates
 
-# for file in roles.yml codebuild.yml lambda-deploy.yml pipeline.yml; do
+for file in roles.yml codebuild.yml lambda-deploy.yml pipeline.yml; do
 
-#   aws s3 cp $file s3://$BUCKET/$file
+  aws s3 cp $file s3://$BUCKET/$file
 
-# done
+done
  
 #Now deploy the main stack
 

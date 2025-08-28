@@ -95,6 +95,7 @@ Resources:
         ArtifactBucket: !Ref DeploymentBucket
         CodePipelineServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodePipelineServiceRoleArn
         CodeBuildProjectName: !GetAtt CodeBuildStack.Outputs.CodeBuildProjectName
+        CodeBuildServiceRoleArn: !GetAtt IAMRolesStack.Outputs.CodeBuildServiceRoleArn
 
 Outputs:
   InstancePublicIP:
