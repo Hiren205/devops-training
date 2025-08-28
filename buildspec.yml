@@ -6,10 +6,9 @@ phases:
       nodejs: 22
   build:
     commands:
-      - SRC_DIR=$(pwd)
-      - cd lambda
       - echo "Zipping Lambda source..."
-      - zip -r lambda.zip app.js
+      - cd lambda
+      - zip -r ../lambda.zip app.js   # create in root
 artifacts:
   files:
     - lambda.zip
