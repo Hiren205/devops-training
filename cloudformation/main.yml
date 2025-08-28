@@ -7,7 +7,7 @@ Parameters:
     Default: calculator
   GitHubRepo:
     Type: String
-    Default: Hiren205/devops_cicd
+    Default: Hiren205/devops-training
   GitHubBranch:
     Type: String
     Default: main
