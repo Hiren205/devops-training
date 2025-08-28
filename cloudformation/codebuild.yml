@@ -42,14 +42,12 @@ Resources:
                 nodejs: 22
             build:
               commands:
-                - echo "Current working directory: $(pwd)"
-                - echo "Listing all files in current directory:"
+                - echo "Current working directory $(pwd)"
+                - echo "Listing all files in current directory"
                 - ls -al
+                - LAMBDA_FUNCTION_NAME=calculator-Lambda
                 - echo "Deploying Lambda function $LAMBDA_FUNCTION_NAME..."
-                - |
-                  aws lambda update-function-code \
-                    --function-name $LAMBDA_FUNCTION_NAME \
-                    --zip-file fileb://lambda.zip
+                - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --zip-file fileb://lambda.zip                   
           artifacts:
             files:
               - '**/*'

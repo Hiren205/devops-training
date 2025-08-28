@@ -32,7 +32,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub "${ProjectName}-Lambda"
-      Handler: index.handler
+      Handler: app.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs22.x
       Code:
