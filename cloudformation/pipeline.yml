@@ -59,19 +59,19 @@ Resources:
                 ProjectName: !Ref CodeBuildProjectName
         - Name: Deploy
           Actions:
-            - Name: CloudFormationDeploy
+            - Name: LambdaDeploy
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
-                Provider: CloudFormation
+                Provider: Lambda
                 Version: 1
               InputArtifacts:
                 - Name: BuildOutput
               Configuration:
-                ActionMode: CREATE_UPDATE
-                StackName: !Sub "${ProjectName}-MainStack"
-                Capabilities: CAPABILITY_NAMED_IAM
-                TemplatePath: BuildOutput::cloudformation/main.yml
+                FunctionName: !Sub "${ProjectName}-LambdaFunction"
+                S3Bucket: !Ref ArtifactBucket
+                S3ObjectKey: BuildOutput::lambda.zip   
+
 
 Outputs:
   PipelineName:
